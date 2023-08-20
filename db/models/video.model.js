@@ -1,21 +1,37 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
-const CATEGORY_TABLE = 'categories';
+const VIDEO_TABLE = 'videos';
 
-const CategorySchema = {
+const VideoSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
     primaryKey: true,
     type: DataTypes.INTEGER
   },
-  name: {
+  thumbnail_image: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  external_id: {
     type: DataTypes.STRING,
     unique: true,
     allowNull: false,
   },
-  image: {
+  duration: {
     type: DataTypes.STRING,
+    allowNull: false,
+  },
+  duration_milliseconds: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   createdAt: {
@@ -27,23 +43,16 @@ const CategorySchema = {
 }
 
 
-class Category extends Model {
-
-  static associate(models) {
-    this.hasMany(models.Product, {
-      as: 'products',
-      foreignKey: 'categoryId'
-    });
-  }
+class Video extends Model {
 
   static config(sequelize) {
     return {
       sequelize,
-      tableName: CATEGORY_TABLE,
-      modelName: 'Category',
+      tableName: VIDEO_TABLE,
+      modelName: 'Video',
       timestamps: false
     }
   }
 }
 
-module.exports = { Category, CategorySchema, CATEGORY_TABLE };
+module.exports = { Video, VideoSchema, VIDEO_TABLE };
