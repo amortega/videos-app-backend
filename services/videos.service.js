@@ -8,7 +8,11 @@ class VideoService {
   constructor() {}
 
   async create(data) {
-    const newVideo = await models.Video.create(data);
+    let newVideo = await models.Video.create(data);
+    newVideo = {
+      ...newVideo.dataValues,
+      format_duration: this.getFormatDuration(newVideo.dataValues.duration_milliseconds)
+    }
     return newVideo;
   }
 
@@ -54,21 +58,26 @@ class VideoService {
         }
       });
 
-      const video = {
-        title: response_youtube.data.items[0].snippet.title,
-        description: response_youtube.data.items[0].snippet.description,
-        thumbnail_image: response_youtube.data.items[0].snippet.thumbnails.default.url,
-        external_id: external_id,
-        duration: response_youtube.data.items[0].contentDetails.duration,
-        duration_milliseconds: this.convertYoutubeDurationToMilliseconds(response_youtube.data.items[0].contentDetails.duration)
-      }
+      if (response_youtube.data.items.length) {
+        const video = {
+          title: response_youtube.data.items[0].snippet.title,
+          description: response_youtube.data.items[0].snippet.description,
+          thumbnail_image: response_youtube.data.items[0].snippet.thumbnails.medium.url,
+          external_id: external_id,
+          duration: response_youtube.data.items[0].contentDetails.duration,
+          duration_milliseconds: this.convertYoutubeDurationToMilliseconds(response_youtube.data.items[0].contentDetails.duration)
+        }
 
-      const { error } = createVideoSchema.validate(video, { abortEarly: false });
+        const { error } = createVideoSchema.validate(video, { abortEarly: false });
 
-      if (error) {
-        throw boom.badRequest(error);
+        if (error) {
+          throw boom.badRequest(error);
+        }
+        return video;
       }
-      return video;
+      else {
+        throw boom.notFound('El video buscado no existe.');
+      }
 
     } catch (error) {
       if (axios.isAxiosError(error)) {

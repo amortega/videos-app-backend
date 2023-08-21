@@ -1,4 +1,5 @@
 const express = require('express');
+const boom = require('@hapi/boom');
 
 const VideoService = require('./../services/videos.service');
 const validatorHandler = require('./../middlewares/validator.handler');
@@ -36,23 +37,13 @@ router.post('/',
       const body = req.body;
       const external_id = service.getExternalId(body.youtube_url);
       if (!external_id) {
-        return res.status(400).json({
-          code: 400,
-          id_error: 'INVALID_URL_YOUTUBE',
-          duplicated: false,
-          message: 'Invalid URL youtube'
-        });
+        throw boom.badRequest('URL inválida o no soportada.');
       }
 
       const video = await service.findOneForExternalId(external_id);
 
       if (video) {
-        return res.status(201).json({
-          code: 200,
-          id_error: 'DUPLICATE_VIDEO',
-          duplicated: true,
-          message: 'El registro ingresado ya se encuentra creado en su lista de reproducción'
-        })
+        throw boom.badRequest('El video ingresado ya se encuentra creado en su lista de reproducción.');
       }
 
       try {
