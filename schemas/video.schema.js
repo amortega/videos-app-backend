@@ -12,7 +12,7 @@ const youtube_url = Joi.string().uri();
 const createVideoSchema = Joi.object({
   thumbnail_image: thumbnail_image.required(),
   title: title.required(),
-  description: description,
+  description: description.optional().allow(null).allow(''),
   external_id: external_id.required(),
   duration: duration.required(),
   duration_milliseconds: duration_milliseconds.required()
