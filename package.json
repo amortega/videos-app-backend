@@ -36,6 +36,6 @@
     "sequelize-cli": "^6.2.0"
   },
   "engines": {
-    "node": "14.1.0"
+    "node": "18.17.1"
   }
 }
