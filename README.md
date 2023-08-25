@@ -2,6 +2,12 @@
 
 Backend para gestionar listas de reproducción de videos de YouTube, desarrollado con Node.js v18.17.1 + Express.js + Sequelize (PostgreSQL).
 
+## Prerequisitos
+```sh
+Node.js v18.17.1
+Docker.
+```
+#
 
 ## Pasos para ejecución de proyecto de manera local.
 
