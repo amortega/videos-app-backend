@@ -34,6 +34,10 @@ const VideoSchema = {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  embed_url: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   createdAt: {
     allowNull: false,
     type: DataTypes.DATE,

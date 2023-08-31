@@ -1,5 +1,6 @@
 const boom = require('@hapi/boom');
 const axios = require('axios');
+const Vimeo = require('vimeo').Vimeo;
 
 const { models } = require('./../libs/sequelize');
 const { createVideoSchema } = require('./../schemas/video.schema');
@@ -65,7 +66,8 @@ class VideoService {
           thumbnail_image: response_youtube.data.items[0].snippet.thumbnails.medium.url,
           external_id: external_id,
           duration: response_youtube.data.items[0].contentDetails.duration,
-          duration_milliseconds: this.convertYoutubeDurationToMilliseconds(response_youtube.data.items[0].contentDetails.duration)
+          duration_milliseconds: this.convertYoutubeDurationToMilliseconds(response_youtube.data.items[0].contentDetails.duration),
+          embed_url: `https://www.youtube.com/embed/${external_id}?autoplay=1`
         }
 
         const { error } = createVideoSchema.validate(video, { abortEarly: false });
@@ -91,24 +93,37 @@ class VideoService {
     }
   }
 
-  getExternalId(url_youtube) {
-    let indexInicio;
-    let indexFinal;
-    let external_id;
-    indexInicio = url_youtube.indexOf('v=');
-    if (indexInicio === -1) {
-      indexInicio = url_youtube.indexOf('.be/');
-      if (indexInicio === -1) {
-        return external_id;
-      }
-      indexFinal = url_youtube.indexOf('?', indexInicio);
-      external_id = indexFinal === -1 ? url_youtube.substring(indexInicio + 4) : url_youtube.substring(indexInicio + 4, indexFinal);
-    }
-    else {
-      indexFinal = url_youtube.indexOf('&', indexInicio);
-      external_id = indexFinal === -1 ? url_youtube.substring(indexInicio + 2) : url_youtube.substring(indexInicio + 2, indexFinal);
-    }
-    return external_id;
+  async callApiVimeo(external_id) {
+    return new Promise( (resolve, reject) => {
+      let client = new Vimeo(process.env.CLIENT_ID_VIMEO, process.env.CLIENT_SECRET_VIMEO, process.env.API_KEY_VIMEO);
+      client.request({
+        method: 'GET',
+        path: `videos/${external_id}`
+      }, function (error, body) {
+        if (error) {
+          reject(false);
+          return;
+        }
+        const { pictures, name, description, duration } = body;
+        resolve({
+          title: name,
+          description,
+          thumbnail_image: pictures.base_link,
+          duration,
+          external_id,
+          duration_milliseconds: parseInt(duration * 1000),
+          embed_url: body.player_embed_url + '&autoplay=1'
+        });
+      })
+    });
+  }
+
+  getExternalId(url) {
+    const pattern = /(?:https?:\/\/(?:www\.)?(?:vimeo\.com\/|youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+))/g;
+    const matches = url.matchAll(pattern);
+
+    const videoIds = [...matches].map(match => match[1]);
+    return videoIds.length ? videoIds[0] : null;
   }
 
   convertYoutubeDurationToMilliseconds(duration) {

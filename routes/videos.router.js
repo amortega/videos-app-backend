@@ -34,20 +34,31 @@ router.post('/',
   validatorHandler(initialCreationVideoSchema, 'body'),
   async (req, res, next) => {
     try {
-      const body = req.body;
-      const external_id = service.getExternalId(body.youtube_url);
+      const external_id = service.getExternalId(req.body.youtube_url);
+      let video;
+
       if (!external_id) {
         throw boom.badRequest('URL inválida o no soportada.');
       }
 
-      const video = await service.findOneForExternalId(external_id);
+      video = await service.findOneForExternalId(external_id);
 
       if (video) {
         throw boom.badRequest('El video ingresado ya se encuentra creado en su lista de reproducción.');
       }
 
       try {
-        const video = await service.searchApiYoutube(external_id);
+        video = await service.callApiVimeo(external_id);
+      } catch (error) {
+        try {
+          video = await service.searchApiYoutube(external_id);
+        } catch (error) {
+          console.error(error);
+          throw boom.badRequest('URL inválida o no soportada.');
+        }
+      }
+
+      try {
         const newVideo = await service.create(video);
         return res.status(201).json(newVideo);
       } catch (error) {

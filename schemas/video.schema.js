@@ -8,6 +8,7 @@ const external_id = Joi.string();
 const duration = Joi.string();
 const duration_milliseconds = Joi.number().integer();
 const youtube_url = Joi.string().uri();
+const embed_url = Joi.string();
 
 const createVideoSchema = Joi.object({
   thumbnail_image: thumbnail_image.required(),
@@ -15,7 +16,8 @@ const createVideoSchema = Joi.object({
   description: description.optional().allow(null).allow(''),
   external_id: external_id.required(),
   duration: duration.required(),
-  duration_milliseconds: duration_milliseconds.required()
+  duration_milliseconds: duration_milliseconds.required(),
+  embed_url: embed_url
 });
 
 const initialCreationVideoSchema = Joi.object({
